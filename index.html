@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>What I Needed Today</title>
+  <style>
+    :root {
+      --bg-start: #fff8ef;
+      --bg-end: #f5e9ff;
+      --glow1: rgba(255, 210, 170, 0.6);
+      --glow2: rgba(190, 175, 255, 0.5);
+      --card: rgba(255, 255, 255, 0.82);
+      --text: #2d2638;
+      --muted: #746b7d;
+      --accent: #7c5cff;
+      --accent-dark: #6544ec;
+      --focus-ring: rgba(124, 92, 255, 0.28);
+      --border: rgba(65, 45, 90, 0.12);
+      --shadow: 0 24px 70px rgba(82, 58, 110, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 20%, var(--glow1), transparent 28%),
+        radial-gradient(circle at 85% 15%, var(--glow2), transparent 30%),
+        linear-gradient(135deg, var(--bg-start), var(--bg-end));
+      display: grid;
+      place-items: center;
+      padding: 32px 18px;
+      transition: background 500ms ease;
+    }
+
+    .app {
+      width: min(760px, 100%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 32px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 44px 44px 24px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(124, 92, 255, 0.1);
+      color: var(--accent-dark);
+      font-size: 0.83rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+
+    .secret-sparkle {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      padding: 0;
+      font: inherit;
+      cursor: pointer;
+      line-height: 1;
+      transition: transform 160ms ease;
+    }
+
+    .secret-sparkle:hover {
+      transform: rotate(14deg) scale(1.18);
+    }
+
+    .secret-sparkle:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 4px;
+      border-radius: 999px;
+    }
+
+    h1 {
+      margin: 18px 0 10px;
+      font-size: clamp(2.35rem, 7vw, 4.7rem);
+      line-height: 0.98;
+      letter-spacing: -0.055em;
+    }
+
+    .subtitle {
+      margin: 0 auto;
+      max-width: 520px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.65;
+    }
+
+    .content {
+      padding: 20px 44px 44px;
+    }
+
+    .mood-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .mood-btn {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.74);
+      color: var(--text);
+      border-radius: 20px;
+      padding: 20px;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .mood-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 30px rgba(74, 52, 98, 0.1);
+      border-color: var(--focus-ring);
+    }
+
+    .mood-btn:focus-visible,
+    .action-btn:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 3px;
+    }
+
+    .mood-emoji {
+      font-size: 1.8rem;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .mood-title {
+      display: block;
+      font-size: 1.02rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .mood-desc {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .quote-panel {
+      display: none;
+      animation: rise 420ms ease both;
+    }
+
+    .quote-panel.active {
+      display: block;
+    }
+
+    .mood-panel.hidden {
+      display: none;
+    }
+
+    .quote-card {
+      position: relative;
+      margin-top: 10px;
+      padding: 34px;
+      border-radius: 24px;
+      background: linear-gradient(145deg, rgba(255,255,255,0.94), rgba(255,255,255,0.72));
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .quote-card::before {
+      content: "“";
+      position: absolute;
+      top: -24px;
+      left: 18px;
+      font-family: Georgia, serif;
+      font-size: 8rem;
+      color: rgba(124, 92, 255, 0.1);
+      line-height: 1;
+    }
+
+    .quote-label {
+      position: relative;
+      z-index: 1;
+      color: var(--accent-dark);
+      font-weight: 800;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    blockquote {
+      position: relative;
+      z-index: 1;
+      margin: 18px 0 14px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.65rem, 4vw, 2.65rem);
+      line-height: 1.25;
+      letter-spacing: -0.025em;
+    }
+
+    .author {
+      position: relative;
+      z-index: 1;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .action-btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 13px 17px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 160ms ease, opacity 160ms ease;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .secondary {
+      background: rgba(45, 38, 56, 0.07);
+      color: var(--text);
+    }
+
+    .footer-note {
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 0.83rem;
+      text-align: center;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero,
+      .content {
+        padding-left: 22px;
+        padding-right: 22px;
+      }
+
+      .hero {
+        padding-top: 30px;
+      }
+
+      .mood-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .quote-card {
+        padding: 26px;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      .action-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <div class="eyebrow"><button type="button" class="secret-sparkle" id="secretSparkle" aria-label="Open a secret silly quote" title="A suspiciously sparkly secret">✨</button> A little something for you</div>
+      <h1>How are you feeling today?</h1>
+      <p class="subtitle">
+        Choose what you need right now, and we’ll find a quote to match your mood.
+      </p>
+    </section>
+
+    <section class="content">
+      <div class="mood-panel" id="moodPanel">
+        <div class="mood-grid">
+          <button type="button" class="mood-btn" data-mood="funny">
+            <span class="mood-emoji">😂</span>
+            <span class="mood-title">Make Me Laugh</span>
+            <span class="mood-desc">Something light, silly, and a little unexpected.</span>
+          </button>
+
+          <button type="button" class="mood-btn" data-mood="calm">
+            <span class="mood-emoji">🌿</span>
+            <span class="mood-title">Help Me Relax</span>
+            <span class="mood-desc">A calming thought for a busy mind.</span>
+          </button>
+
+          <button type="button" class="mood-btn" data-mood="motivation">
+            <span class="mood-emoji">🔥</span>
+            <span class="mood-title">Inspire Me</span>
+            <span class="mood-desc">A reminder to keep moving forward.</span>
+          </button>
+
+          <button type="button" class="mood-btn" data-mood="kindness">
+            <span class="mood-emoji">🩷</span>
+            <span class="mood-title">Need Some Kindness</span>
+            <span class="mood-desc">A gentle reminder to treat yourself with care.</span>
+          </button>
+
+          <button type="button" class="mood-btn" data-mood="wisdom">
+            <span class="mood-emoji">📚</span>
+            <span class="mood-title">Words of Wisdom</span>
+            <span class="mood-desc">A thoughtful perspective or timeless life lesson.</span>
+          </button>
+
+          <button type="button" class="mood-btn" data-mood="surprise">
+            <span class="mood-emoji">🎲</span>
+            <span class="mood-title">Surprise Me!</span>
+            <span class="mood-desc">Get a random quote from any category.</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="quote-panel" id="quotePanel" aria-live="polite">
+        <div class="quote-card">
+          <div class="quote-label" id="quoteLabel">Your quote</div>
+          <blockquote id="quoteText"></blockquote>
+          <div class="author" id="quoteAuthor"></div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="action-btn primary" id="anotherBtn">Show me another</button>
+          <button type="button" class="action-btn secondary" id="copyBtn">Copy quote</button>
+          <button type="button" class="action-btn secondary" id="backBtn">Choose another mood</button>
+        </div>
+
+        <div class="footer-note" id="copyStatus" role="status"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const quotes = {
+      funny: [
+        { text: "A day without laughter is a day wasted.", author: "Charlie Chaplin" },
+        { text: "The best way to cheer yourself is to try to cheer someone else up.", author: "Mark Twain" },
+        { text: "Age is an issue of mind over matter. If you don't mind, it doesn't matter.", author: "Mark Twain" },
+        { text: "Always forgive your enemies; nothing annoys them so much.", author: "Oscar Wilde" },
+        { text: "I can resist everything except temptation.", author: "Oscar Wilde" },
+        { text: "The only way to get rid of a temptation is to yield to it.", author: "Oscar Wilde" },
+        { text: "Wine is constant proof that God loves us and loves to see us happy.", author: "Benjamin Franklin" },
+        { text: "Guests, like fish, begin to smell after three days.", author: "Benjamin Franklin" },
+        { text: "Never put off till tomorrow what may be done the day after tomorrow just as well.", author: "Mark Twain" },
+        { text: "Some people never go crazy. What truly horrible lives they must lead.", author: "Charles Bukowski" },
+        { text: "If you tell the truth, you don't have to remember anything.", author: "Mark Twain" },
+        { text: "Life is too important to be taken seriously.", author: "Oscar Wilde" }
+      ],
+      motivation: [
+        { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+        { text: "Nothing great was ever achieved without enthusiasm.", author: "Ralph Waldo Emerson" },
+        { text: "What you do speaks so loudly that I cannot hear what you say.", author: "Ralph Waldo Emerson" },
+        { text: "Do the thing you fear, and the death of fear is certain.", author: "Ralph Waldo Emerson" },
+        { text: "Well done is better than well said.", author: "Benjamin Franklin" },
+        { text: "Energy and persistence conquer all things.", author: "Benjamin Franklin" },
+        { text: "It always seems impossible until it's done.", author: "Nelson Mandela" },
+        { text: "The future depends on what you do today.", author: "Mahatma Gandhi" },
+        { text: "Act as if what you do makes a difference. It does.", author: "William James" },
+        { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+        { text: "You miss one hundred percent of the shots you don't take.", author: "Wayne Gretzky" },
+        { text: "The way to get started is to quit talking and begin doing.", author: "Walt Disney" }
+      ],
+      calm: [
+        { text: "Adopt the pace of nature: her secret is patience.", author: "Ralph Waldo Emerson" },
+        { text: "Nothing can bring you peace but yourself.", author: "Ralph Waldo Emerson" },
+        { text: "He who is contented is rich.", author: "Lao Tzu" },
+        { text: "Nature does not hurry, yet everything is accomplished.", author: "Lao Tzu" },
+        { text: "The quieter you become, the more you are able to hear.", author: "Rumi" },
+        { text: "Peace comes from within. Do not seek it without.", author: "Buddha" },
+        { text: "There is more to life than increasing its speed.", author: "Mahatma Gandhi" },
+        { text: "The greatest weapon against stress is our ability to choose one thought over another.", author: "William James" },
+        { text: "Let us be silent, that we may hear the whispers of the gods.", author: "Ralph Waldo Emerson" },
+        { text: "All of humanity's problems stem from man's inability to sit quietly in a room alone.", author: "Blaise Pascal" },
+        { text: "To sit in the shade on a fine day and look upon verdure is the most perfect refreshment.", author: "Jane Austen" },
+        { text: "Smile, breathe, and go slowly.", author: "Thich Nhat Hanh" }
+      ],
+      kindness: [
+        { text: "No act of kindness, no matter how small, is ever wasted.", author: "Aesop" },
+        { text: "Be kind whenever possible. It is always possible.", author: "Dalai Lama" },
+        { text: "Kind words can be short and easy to speak, but their echoes are truly endless.", author: "Mother Teresa" },
+        { text: "How far that little candle throws his beams! So shines a good deed in a weary world.", author: "William Shakespeare" },
+        { text: "A warm smile is the universal language of kindness.", author: "William Arthur Ward" },
+        { text: "Wherever there is a human being, there is an opportunity for kindness.", author: "Seneca" },
+        { text: "Tenderness and kindness are not signs of weakness and despair, but manifestations of strength and resolution.", author: "Khalil Gibran" },
+        { text: "You cannot do a kindness too soon, for you never know how soon it will be too late.", author: "Ralph Waldo Emerson" },
+        { text: "Kindness is the language which the deaf can hear and the blind can see.", author: "Mark Twain" },
+        { text: "The smallest act of kindness is worth more than the grandest intention.", author: "Oscar Wilde" },
+        { text: "Be gentle with yourself. You're doing the best you can.", author: "Unknown" },
+        { text: "A little consideration, a little thought for others, makes all the difference.", author: "A. A. Milne" }
+      ],
+      wisdom: [
+        { text: "The only true wisdom is in knowing you know nothing.", author: "Socrates" },
+        { text: "Knowing yourself is the beginning of all wisdom.", author: "Aristotle" },
+        { text: "The journey of a thousand miles begins with one step.", author: "Lao Tzu" },
+        { text: "It is not length of life, but depth of life.", author: "Ralph Waldo Emerson" },
+        { text: "The unexamined life is not worth living.", author: "Socrates" },
+        { text: "We suffer more often in imagination than in reality.", author: "Seneca" },
+        { text: "It is the power of the mind to be unconquerable.", author: "Seneca" },
+        { text: "No man is free who is not master of himself.", author: "Epictetus" },
+        { text: "The happiness of your life depends upon the quality of your thoughts.", author: "Marcus Aurelius" },
+        { text: "Waste no more time arguing what a good person should be. Be one.", author: "Marcus Aurelius" },
+        { text: "He who knows others is wise; he who knows himself is enlightened.", author: "Lao Tzu" },
+        { text: "When you know better, do better.", author: "Maya Angelou" }
+      ],
+    };
+
+
+    const secretQuotes = [
+      { text: "I tried to organize my socks, but they formed a union and demanded better drawer conditions.", author: "The Laundry Negotiator" },
+      { text: "Never trust a chair with wheels. It is always one push away from adventure.", author: "An Office Philosopher" },
+      { text: "My brain has 47 tabs open, and one of them is just a duck wearing sunglasses.", author: "Unknown, But Concerned" },
+      { text: "I put my problems in a tiny hat. They are still problems, but now they look important.", author: "Professor Noodle" },
+      { text: "The early bird gets the worm, but the late pigeon gets an entire french fry.", author: "Sidewalk Science" },
+      { text: "Confidence is entering a room like you know where the bathroom is.", author: "Captain Absolutely Sure" },
+      { text: "Today I will be productive, unless a blanket makes a stronger offer.", author: "The Department of Naps" },
+      { text: "If tomatoes are fruit, ketchup is technically a smoothie. I will not be taking questions.", author: "Dr. Lunch" },
+      { text: "A goose is just a duck that woke up and chose legal trouble.", author: "Bird Court Records" },
+      { text: "I whispered 'be normal' to myself and immediately walked into a doorframe.", author: "An Eyewitness" },
+      { text: "Somewhere out there, a snail is having the fastest day of its life.", author: "Tiny Sports Network" },
+      { text: "My five-year plan is mostly snacks arranged by emotional importance.", author: "Strategic Crumb Officer" },
+      { text: "I am not saying the spoon is haunted, but it keeps ending up in the fork drawer.", author: "Kitchen Paranormal Unit" },
+      { text: "Every pizza is a personal pizza if you believe in yourself and avoid witnesses.", author: "The Crust Coach" },
+      { text: "I asked the universe for a sign. It sent me a coupon for twelve yogurts.", author: "Cosmic Customer Service" },
+      { text: "Be yourself, unless you can be three raccoons running a bakery. Then do that.", author: "Absolutely Reliable Advice" },
+      { text: "My motivation arrived, looked around, and said it forgot something in the car.", author: "The Productivity Department" },
+      { text: "The moon is just the sun's night-light, and nobody can convince me otherwise.", author: "Space Toddler" },
+      { text: "I do not rise and shine. I caffeinate and hope for the best.", author: "Morning Operations" },
+      { text: "A tiny wizard lives in my calculator and becomes furious when I divide by zero.", author: "Math, Probably" }
+    ];
+
+    const labels = {
+      funny: "A laugh for you",
+      motivation: "A little motivation",
+      calm: "A calming thought",
+      kindness: "A little kindness",
+      wisdom: "Words of wisdom",
+      surprise: "A surprise for you",
+      secret: "You found the silly secret"
+    };
+
+    const themes = {
+      default: {
+        start: "#fff8ef",
+        end: "#f5e9ff",
+        glow1: "rgba(255, 210, 170, 0.6)",
+        glow2: "rgba(190, 175, 255, 0.5)",
+        accent: "#7c5cff",
+        accentDark: "#6544ec"
+      },
+      funny: {
+        start: "#fff9c9",
+        end: "#ffe1cf",
+        glow1: "rgba(255, 229, 112, 0.68)",
+        glow2: "rgba(255, 176, 132, 0.42)",
+        accent: "#e7a51a",
+        accentDark: "#c77d08"
+      },
+      motivation: {
+        start: "#ffe8e6",
+        end: "#ffe1c7",
+        glow1: "rgba(255, 111, 111, 0.56)",
+        glow2: "rgba(255, 171, 94, 0.4)",
+        accent: "#e85a52",
+        accentDark: "#c5413b"
+      },
+      calm: {
+        start: "#e9fff1",
+        end: "#d9f5f3",
+        glow1: "rgba(111, 210, 151, 0.56)",
+        glow2: "rgba(94, 196, 190, 0.38)",
+        accent: "#3ca879",
+        accentDark: "#287f65"
+      },
+      kindness: {
+        start: "#fff0f7",
+        end: "#eee1ff",
+        glow1: "rgba(255, 148, 199, 0.56)",
+        glow2: "rgba(185, 151, 241, 0.38)",
+        accent: "#df6fa8",
+        accentDark: "#b9508c"
+      },
+      wisdom: {
+        start: "#edf7ff",
+        end: "#e5e2ff",
+        glow1: "rgba(105, 174, 246, 0.55)",
+        glow2: "rgba(143, 132, 230, 0.38)",
+        accent: "#5c86e8",
+        accentDark: "#465fb9"
+      },
+      surprise: {
+        start: "#fff5e8",
+        end: "#eee4ff",
+        glow1: "rgba(255, 132, 182, 0.55)",
+        glow2: "rgba(108, 184, 255, 0.52)",
+        accent: "#8b5cf6",
+        accentDark: "#6d3ed1",
+        rainbow: true
+      },
+      secret: {
+        start: "#fff6b8",
+        end: "#ffd7f3",
+        glow1: "rgba(255, 226, 92, 0.68)",
+        glow2: "rgba(255, 92, 168, 0.48)",
+        accent: "#ff5ca8",
+        accentDark: "#9c3fc7"
+      }
+    };
+
+    const moodPanel = document.getElementById("moodPanel");
+    const quotePanel = document.getElementById("quotePanel");
+    const quoteText = document.getElementById("quoteText");
+    const quoteAuthor = document.getElementById("quoteAuthor");
+    const quoteLabel = document.getElementById("quoteLabel");
+    const anotherBtn = document.getElementById("anotherBtn");
+    const backBtn = document.getElementById("backBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const copyStatus = document.getElementById("copyStatus");
+    const secretSparkle = document.getElementById("secretSparkle");
+
+    let currentMood = null;
+    const usedQuotes = new Set();
+    const quoteCategories = ["funny", "motivation", "calm", "kindness", "wisdom"];
+    const usedSecretQuotes = new Set();
+
+    function applyTheme(themeName) {
+      const theme = themes[themeName] || themes.default;
+      const root = document.documentElement;
+
+      root.style.setProperty("--bg-start", theme.start);
+      root.style.setProperty("--bg-end", theme.end);
+      root.style.setProperty("--glow1", theme.glow1);
+      root.style.setProperty("--glow2", theme.glow2);
+      root.style.setProperty("--accent", theme.accent);
+      root.style.setProperty("--accent-dark", theme.accentDark);
+      root.style.setProperty("--focus-ring", `${theme.accent}47`);
+
+      document.body.style.background = theme.rainbow
+        ? `
+          radial-gradient(circle at 15% 20%, ${theme.glow1}, transparent 28%),
+          radial-gradient(circle at 85% 15%, ${theme.glow2}, transparent 30%),
+          linear-gradient(135deg, #fff3b8 0%, #ffd8e8 25%, #e8dcff 50%, #d9efff 75%, #dcf7e7 100%)
+        `
+        : "";
+    }
+
+    function displayQuote(quote, label, statusMessage = "") {
+      quoteText.textContent = quote.text;
+      quoteAuthor.textContent = `— ${quote.author}`;
+      quoteLabel.textContent = label;
+      moodPanel.classList.add("hidden");
+      quotePanel.classList.add("active");
+      copyStatus.textContent = statusMessage;
+    }
+
+    function showQuote(mood) {
+      const categories = mood === "surprise" ? quoteCategories : [mood];
+      const validCategories = categories.filter(category => Array.isArray(quotes[category]) && quotes[category].length > 0);
+
+      if (validCategories.length === 0 || !themes[mood] || !labels[mood]) {
+        copyStatus.textContent = "No quotes are available for this mood yet.";
+        return;
+      }
+
+      currentMood = mood;
+      let available = [];
+
+      validCategories.forEach(category => {
+        quotes[category].forEach((quote, index) => {
+          const key = `${category}:${index}`;
+          if (!usedQuotes.has(key)) available.push({ quote, key });
+        });
+      });
+
+      if (available.length === 0) {
+        validCategories.forEach(category => {
+          quotes[category].forEach((_, index) => usedQuotes.delete(`${category}:${index}`));
+        });
+
+        validCategories.forEach(category => {
+          quotes[category].forEach((quote, index) => {
+            available.push({ quote, key: `${category}:${index}` });
+          });
+        });
+      }
+
+      const chosen = available[Math.floor(Math.random() * available.length)];
+      usedQuotes.add(chosen.key);
+      applyTheme(mood);
+      displayQuote(chosen.quote, labels[mood]);
+    }
+
+    function showSecretQuote() {
+      if (secretQuotes.length === 0) {
+        copyStatus.textContent = "No secret quotes are available yet.";
+        return;
+      }
+
+      currentMood = "secret";
+      let available = secretQuotes
+        .map((quote, index) => ({ quote, index }))
+        .filter(item => !usedSecretQuotes.has(item.index));
+
+      if (available.length === 0) {
+        usedSecretQuotes.clear();
+        available = secretQuotes.map((quote, index) => ({ quote, index }));
+      }
+
+      const chosen = available[Math.floor(Math.random() * available.length)];
+      usedSecretQuotes.add(chosen.index);
+      applyTheme("secret");
+      displayQuote(chosen.quote, labels.secret, "✨ Secret silliness unlocked.");
+    }
+
+    async function copyQuote() {
+      const text = `${quoteText.textContent} ${quoteAuthor.textContent}`.trim();
+      if (!text) return false;
+
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      const copied = document.execCommand("copy");
+      textarea.remove();
+      return copied;
+    }
+
+    document.querySelectorAll(".mood-btn").forEach(button => {
+      button.addEventListener("click", () => showQuote(button.dataset.mood));
+    });
+
+    secretSparkle.addEventListener("click", showSecretQuote);
+
+    anotherBtn.addEventListener("click", () => {
+      if (!currentMood) return;
+      if (currentMood === "secret") showSecretQuote();
+      else showQuote(currentMood);
+    });
+
+    backBtn.addEventListener("click", () => {
+      currentMood = null;
+      quotePanel.classList.remove("active");
+      moodPanel.classList.remove("hidden");
+      copyStatus.textContent = "";
+      applyTheme("default");
+    });
+
+    copyBtn.addEventListener("click", async () => {
+      try {
+        const copied = await copyQuote();
+        copyStatus.textContent = copied
+          ? "Quote copied to your clipboard."
+          : "Copying is not available in this browser.";
+      } catch {
+        copyStatus.textContent = "Copying is not available in this browser.";
+      }
+    });
+  </script>
+</body>
+</html>
